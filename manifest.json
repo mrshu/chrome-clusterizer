@@ -1,0 +1,18 @@
+{
+  // Required
+  "name": "Chrome Extension Boilerplate",
+  "version": "0.0.1",
+  "manifest_version": 2,
+
+
+  "description": "Chrome Extension Boilerplate",
+  "icons": {
+      "16": "img/icon_16.png",
+  },
+  "permissions": [],
+  "content_scripts": [],
+  "background": {
+          "scripts": ["js/background.js"]
+  },
+  "web_accessible_resources": []
+}
