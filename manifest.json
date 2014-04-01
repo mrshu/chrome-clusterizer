@@ -9,7 +9,7 @@
   },
   "permissions": [],
   "content_scripts": [{
-        "matches": ["http://*/*"],
+        "matches": ["http://*/*", "https://*/*"],
         "js": ["js/scraper.js"]
   }],
   "background": {
