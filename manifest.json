@@ -10,7 +10,10 @@
       "16": "img/icon_16.png",
   },
   "permissions": [],
-  "content_scripts": [],
+  "content_scripts": [{
+        "matches": ["http://*/*"],
+        "js": ["js/scraper.js"]
+  }],
   "background": {
           "scripts": ["js/background.js"]
   },
