@@ -10,7 +10,10 @@
   "permissions": [],
   "content_scripts": [{
         "matches": ["http://*/*", "https://*/*"],
-        "js": ["js/scraper.js"]
+        "js": [
+                "js/jquery.js",
+                "js/scraper.js"
+        ]
   }],
   "background": {
           "scripts": ["js/background.js"]
