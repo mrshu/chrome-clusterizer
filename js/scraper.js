@@ -12,6 +12,6 @@ chrome.runtime.onMessage.addListener(
                     tmp = tmp.replace(/(<([^>]+)>)/ig, ' ');
                     text += tmp;
                 })
-                sendResponse({text: text});
+                sendResponse({text: text, title: document.title});
             }
     });
