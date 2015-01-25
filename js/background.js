@@ -151,14 +151,13 @@ function averageLink(distances) {
   return sum / distances.length
 }
 
-
-// Euclidean distance
-function distance(a, b) {
+// Manhattan distance (for now)
+function distanceMeasure(a, b) {
   var d = 0;
   for (var i = 0; i < a.length; i++) {
-    d += Math.pow(a[i] - b[i], 2);
+    d += Math.abs(a[i] - b[i]);
   }
-  return Math.sqrt(d);
+  return d;
 }
 
 function Clusterizer(docs) {
@@ -178,7 +177,9 @@ function Clusterizer(docs) {
 
 Clusterizer.prototype.vectorize = function (doc) {
     var matches = doc.match(/\b\w\w+\b/g);
-    console.log(matches, doc);
+    matches = matches.map(function(match) {
+        return match.toLowerCase();
+    });
     var frequencies = {};
     matches.map(function(item) {
         if (item in frequencies) {
@@ -198,14 +199,14 @@ Clusterizer.prototype.equalize = function(docs) {
     });
 
     return docs.map(function(doc){
-        var frequencies = {};
+        var frequencies = new Array();
         for (var i in keys) {
             var key = keys[i];
 
             if (key in doc) {
-                frequencies[key] = doc[key];
+                frequencies.push(doc[key]);
             } else {
-                frequencies[key] = 0;
+                frequencies.push(0);
             }
         }
 
@@ -216,7 +217,7 @@ Clusterizer.prototype.equalize = function(docs) {
 Clusterizer.prototype.clusterize = function (docs) {
     var levels = Cluster({
       input: docs,
-      distance: distance,
+      distance: distanceMeasure,
       linkage: 'average',
       minClusters: 3,
     });
@@ -229,7 +230,7 @@ function Background()
 {
 }
 
-Background.prototype.get_text = function(callback) {
+Background.prototype.clusterize = function() {
     this.out = new Array();
     var $this = this;
     chrome.tabs.query({}, function(tabs) {
@@ -251,10 +252,8 @@ Background.prototype.get_text = function(callback) {
                 $this.out.push({text: response.text, url: t[i].url, title: response.title});
 
                 if (t.length == $this.out.length) {
-                    console.log($this.out);
                     var clusters = new Clusterizer($this.out);
                     clusters = clusters[clusters.length -1].clusters;
-                    console.log(clusters);
                     console.log(clusters.map(function(cluster){
                         return cluster.map(function(id) {
                             return $this.out[id].url;
