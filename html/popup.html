@@ -5,7 +5,7 @@
     <style type="text/css">
       body {
         width: 300px;
-        height: 150px;
+        height: 100px;
       }
 
       #clusters {
@@ -15,6 +15,12 @@
       #btn {
         width: 150px;
         height: 50px;
+        margin: 0 auto;
+      }
+
+      #btn-div {
+        width: 300px;
+        text-align: center;
       }
 
     </style>
@@ -24,9 +30,9 @@
   </head>
   <body>
     <div>
-      Clusterize my tabs into <input type="number" id="clusters" value="3" /> clusters.
+      <p>Clusterize my tabs into <input type="number" id="clusters" value="3" /> clusters.</p>
     </div>
-    <div>
+    <div id="btn-div">
       <button id="btn">Clusterize!</button>
     </div>
   </body>
