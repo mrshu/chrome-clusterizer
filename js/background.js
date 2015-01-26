@@ -160,7 +160,7 @@ function distanceMeasure(a, b) {
   return d;
 }
 
-function Clusterizer(docs) {
+function Clusterizer(docs, numClusters) {
     var $this = this;
     var new_docs = docs.map(function(doc) {
         return $this.vectorize(doc.text);
@@ -171,7 +171,7 @@ function Clusterizer(docs) {
 
     console.log(clusterable_docs);
 
-    return this.clusterize(clusterable_docs);
+    return this.clusterize(clusterable_docs, numClusters);
 }
 
 
@@ -214,12 +214,12 @@ Clusterizer.prototype.equalize = function(docs) {
     });
 }
 
-Clusterizer.prototype.clusterize = function (docs) {
+Clusterizer.prototype.clusterize = function (docs, numClusters) {
     var levels = Cluster({
       input: docs,
       distance: distanceMeasure,
       linkage: 'complete',
-      minClusters: 3,
+      minClusters: numClusters,
     });
 
     return levels;
@@ -230,7 +230,7 @@ function Background()
 {
 }
 
-Background.prototype.clusterize = function() {
+Background.prototype.clusterize = function(numClusters) {
     this.out = new Array();
     var $this = this;
     chrome.tabs.query({}, function(tabs) {
@@ -258,7 +258,7 @@ Background.prototype.clusterize = function() {
                 });
 
                 if (t.length == $this.out.length) {
-                    var clusters = new Clusterizer($this.out);
+                    var clusters = new Clusterizer($this.out, numClusters);
                     clusters = clusters[clusters.length -1].clusters;
                     console.log(clusters.map(function(cluster){
                         return cluster.map(function(id) {
