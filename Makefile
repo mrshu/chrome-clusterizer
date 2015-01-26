@@ -1,4 +1,4 @@
-EXTNAME := chrome-extension-boilerplate
+EXTNAME := chrome-clusterizer
 KEYFILE := $(EXTNAME).pem
 SHELL   := /usr/bin/env bash
 CHROME  := chromium -n --args
