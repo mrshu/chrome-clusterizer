@@ -228,6 +228,12 @@ Clusterizer.prototype.clusterize = function (docs, numClusters) {
 
 function Background()
 {
+    var $this = this;
+    chrome.extension.onMessage.addListener(function(request, sender, callback){
+        if(request.clusterize)
+            $this.clusterize(request.clusters);
+        return true;
+    });
 }
 
 Background.prototype.clusterize = function(numClusters) {
