@@ -218,7 +218,7 @@ Clusterizer.prototype.clusterize = function (docs) {
     var levels = Cluster({
       input: docs,
       distance: distanceMeasure,
-      linkage: 'average',
+      linkage: 'complete',
       minClusters: 3,
     });
 
@@ -249,7 +249,13 @@ Background.prototype.clusterize = function() {
         t.forEach(function(e, i ,a) {
             chrome.tabs.sendMessage(t[i].id, {action: "get_text"}, function(response) {
                 if (response == undefined) return;
-                $this.out.push({text: response.text, url: t[i].url, title: response.title});
+                console.log(e);
+                $this.out.push({
+                    text: response.text,
+                    url: e.url,
+                    title: response.title,
+                    id: e.id
+                });
 
                 if (t.length == $this.out.length) {
                     var clusters = new Clusterizer($this.out);
@@ -259,6 +265,20 @@ Background.prototype.clusterize = function() {
                             return $this.out[id].url;
                         });
                     }));
+
+                    clusters.map(function (cluster) {
+                        var firstID = cluster.pop();
+                        chrome.windows.create({
+                            tabId: $this.out[firstID].id,
+                            type: "normal"
+                        }, function (win) {
+                            var tabIDs = cluster.map(function(id) {
+                                return $this.out[id].id;
+                            });
+                            chrome.tabs.move(tabIDs, {windowId: win.id, index: -1});
+                        });
+
+                    });
                 }
             });
         });
