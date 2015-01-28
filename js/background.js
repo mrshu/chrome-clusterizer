@@ -246,6 +246,10 @@ function Background()
 
 Background.prototype.equalize = function () {
     chrome.tabs.query({}, function(tabs) {
+        tabs = tabs.filter(function (tab) {
+            return ! tab.url.match(/chrome-devtools:\/\//gi);
+        });
+
         var firstTab = tabs.pop();
         chrome.windows.create({
             tabId: firstTab.id
