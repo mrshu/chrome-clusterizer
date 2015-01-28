@@ -229,10 +229,32 @@ Clusterizer.prototype.clusterize = function (docs, numClusters) {
 function Background()
 {
     var $this = this;
+
+    // Automatically inject content scripts on install
+    // as per http://stackoverflow.com/a/11598753
+
+    this.inject();
+
     chrome.extension.onMessage.addListener(function(request, sender, callback){
-        if(request.clusterize)
+        if (request.clusterize)
             $this.clusterize(request.clusters);
+        if (request.equalize)
+            $this.equalize();
         return true;
+    });
+}
+
+Background.prototype.equalize = function () {
+    chrome.tabs.query({}, function(tabs) {
+        var firstTab = tabs.pop();
+        chrome.windows.create({
+            tabId: firstTab.id
+        }, function(win) {
+            var tabIds = tabs.map(function (tab) {
+                return tab.id
+            });
+            chrome.tabs.move(tabIds, {windowId: win.id, index: -1});
+        });
     });
 }
 
@@ -251,11 +273,9 @@ Background.prototype.clusterize = function(numClusters) {
             t.push(e);
         });
 
-
         t.forEach(function(e, i ,a) {
             chrome.tabs.sendMessage(t[i].id, {action: "get_text"}, function(response) {
                 if (response == undefined) return;
-                console.log(e);
                 $this.out.push({
                     text: response.text,
                     url: e.url,
@@ -288,6 +308,40 @@ Background.prototype.clusterize = function(numClusters) {
                 }
             });
         });
+    });
+}
+
+Background.prototype.inject = function () {
+    // Add a `manifest` property to the `chrome` object.
+    chrome.manifest = chrome.app.getDetails();
+
+    var injectIntoTab = function (tab) {
+        // You could iterate through the content scripts here
+        var scripts = chrome.manifest.content_scripts[0].js;
+        var i = 0, s = scripts.length;
+        for( ; i < s; i++ ) {
+            chrome.tabs.executeScript(tab.id, {
+                file: scripts[i]
+            });
+        }
+    }
+
+    // Get all windows
+    chrome.windows.getAll({
+        populate: true
+    }, function (windows) {
+        var i = 0, w = windows.length, currentWindow;
+        for( ; i < w; i++ ) {
+            currentWindow = windows[i];
+            var j = 0, t = currentWindow.tabs.length, currentTab;
+            for( ; j < t; j++ ) {
+                currentTab = currentWindow.tabs[j];
+                // Skip chrome:// pages
+                if( ! currentTab.url.match(/(chrome|chrome-devtools):\/\//gi) ) {
+                    injectIntoTab(currentTab);
+                }
+            }
+        }
     });
 }
 
