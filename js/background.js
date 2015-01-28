@@ -258,6 +258,8 @@ Background.prototype.equalize = function () {
     });
 }
 
+var ALLOWED_URLS_RE = /https?:\/\//gi;
+
 Background.prototype.clusterize = function(numClusters) {
     this.out = new Array();
     var $this = this;
@@ -266,11 +268,9 @@ Background.prototype.clusterize = function(numClusters) {
 
         tabs.forEach(function(e, i, a){
             // ignoring internal urls
-            if (tabs[i].url.indexOf("chrome") == 0) {
-                console.log('skipping ', tabs[i].url);
-                return;
+            if (tabs[i].url.match(ALLOWED_URLS_RE)) {
+                t.push(e);
             }
-            t.push(e);
         });
 
         t.forEach(function(e, i ,a) {
@@ -336,8 +336,8 @@ Background.prototype.inject = function () {
             var j = 0, t = currentWindow.tabs.length, currentTab;
             for( ; j < t; j++ ) {
                 currentTab = currentWindow.tabs[j];
-                // Skip chrome:// pages
-                if( ! currentTab.url.match(/(chrome|chrome-devtools):\/\//gi) ) {
+                // Skip chrome:// and other pages
+                if(currentTab.url.match(ALLOWED_URLS_RE)) {
                     injectIntoTab(currentTab);
                 }
             }
