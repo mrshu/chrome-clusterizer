@@ -283,6 +283,14 @@ Background.prototype.clusterize = function(numClusters) {
                     id: e.id
                 });
 
+                var ids = $this.out.map(function (item) {
+                    return item.id;
+                });
+                console.log(t.filter(function(i) {
+                    return ids.indexOf(i.id) < 0;
+                }));
+                console.log(t.length, $this.out.length);
+
                 if (t.length == $this.out.length) {
                     var clusters = new Clusterizer($this.out, numClusters);
                     clusters = clusters[clusters.length -1].clusters;
