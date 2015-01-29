@@ -4,12 +4,15 @@ chrome.runtime.onMessage.addListener(
             if (request.action == "get_text") {
                 var links = document.getElementsByTagName('a');
                 var hrefs = new Array();
+                var hosts = new Array();
                 for (var i = 0; i < links.length; i++) {
                     var host = links[i].hostname;
                     host = host.replace(/www\./, '');
 
                     if (host !== '')
-                        hrefs.push(host);
+                        hosts.push(host);
+
+                    hrefs.push(links[i].href);
                 }
 
                 console.log(hrefs)
@@ -17,7 +20,8 @@ chrome.runtime.onMessage.addListener(
                 sendResponse({
                     text: document.body.innerText,
                     title: document.title,
-                    links: hrefs
+                    links: hrefs,
+                    hosts: hosts,
                 });
             }
     });

@@ -286,13 +286,24 @@ TfIdf.prototype.equalize = function(docs) {
 function Clusterizer(docs, numClusters) {
     var links = docs.map(function (doc) {
         var weights = {};
-        doc.links.map(function(link) {
-            weights[link] = 100;
-        })
+        doc.hosts.map(function(host) {
+            weights[host] = 100;
+        });
 
         var l = document.createElement("a");
         l.href = doc.url;
-        weights[l.hostname] = 10000;
+        var hostname = l.hostname.replace(/www\./, '');
+        weights[hostname] = 10000;
+
+        docs.map(function (d) {
+            d.links.map(function(link) {
+                if (link == doc.url && d.url != doc.url) {
+                    l.href = d.url;
+                    weights[l.hostname] = 10000;
+                }
+            })
+        })
+
 
         return weights;
     })
@@ -377,6 +388,7 @@ Background.prototype.clusterize = function(numClusters) {
                     url: e.url,
                     title: response.title,
                     id: e.id,
+                    hosts: response.hosts,
                     links: response.links
                 });
 
