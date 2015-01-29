@@ -201,8 +201,9 @@ TfIdf.prototype.idf = function (term) {
     if (this._idfCache[term] && this._idfCache.hasOwnProperty(term))
         return this._idfCache[term];
 
-    var df = this.docs.reduce(function(count, doc) {
-        return count + ((term in doc) ? 1 : 0);
+    var df = 0;
+    this.docs.map(function(doc) {
+        df += ((term in doc) ? 1 : 0);
     });
 
     var idf = 1 + Math.log((this.D) / ( 1 + df ));
