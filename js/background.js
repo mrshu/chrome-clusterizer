@@ -403,7 +403,7 @@ Background.prototype.clusterize = function(numClusters) {
                 if (t.length == $this.out.length) {
                     $this.clusterizer = new Clusterizer($this.out, numClusters);
                     console.log($this.clusterizer);
-                    var clusters = $this.clusterizer.levels[$this.clusterizer.levels.length -1].clusters;
+                    var clusters = $this.bestLevel($this.clusterizer.levels).clusters;
                     console.log(clusters.map(function(cluster){
                         return cluster.map(function(id) {
                             return $this.out[id].url;
@@ -427,6 +427,45 @@ Background.prototype.clusterize = function(numClusters) {
             });
         });
     });
+}
+
+
+Background.prototype.bestLevel = function (levels) {
+    var best = null;
+    var bestAvg = 0;
+    levels.forEach(function(e, i, arr) {
+        var lengths = e.clusters.map(function(item) {
+            return item.length;
+        });
+
+        var max = Math.max.apply(null, lengths);
+        var min = Math.min.apply(null, lengths);
+
+        lengths = lengths.filter(function (el) {
+            if (el == max) {
+                max = -Infinity;
+                return false;
+            } else if (el == min) {
+                min = Infinity;
+                return false;
+            } else {
+                return true;
+            }
+        });
+
+        var sum = 0;
+        lengths.forEach(function(value) {
+            sum += value;
+        });
+
+        var avg = sum/lengths.length;
+        if (avg > bestAvg) {
+            bestAvg = avg;
+            best = e;
+        }
+    });
+
+    return best;
 }
 
 Background.prototype.inject = function () {
