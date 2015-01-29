@@ -172,15 +172,39 @@ function distanceMeasure(a, b) {
   return d / (Math.sqrt(aN) + Math.sqrt(bN));
 }
 
+// distanceMeasure = manhattanDistance;
+
 function TfIdf(docs) {
+    var weighted = {};
+    if (typeof docs == 'object') {
+        weighted = docs.weighted;
+        docs = docs.docs;
+    }
+
     var $this = this;
     this.D = docs.length;
     this._idfCache = {};
     this._maxFreq = {};
 
     this.docs = docs.map(function(doc){
-        return $this.tf(doc);
+        return $this.tf($this.vectorize(doc));
     });
+
+    weighted.forEach(function(e, i, arr) {
+        for (var key in e) {
+            if (key in $this.docs[i]) {
+                $this.docs[i][key] += e[key];
+            } else {
+                $this.docs[i][key] = e[key];
+            }
+
+            if (key in $this._maxFreq) {
+                $this._maxFreq[key] += 1;
+            } else {
+                $this._maxFreq[key] = 1;
+            }
+        }
+    })
 
     this.computed_docs = this.equalize(this.docs);
 }
@@ -189,12 +213,16 @@ TfIdf.prototype.get_docs = function() {
     return this.computed_docs;
 }
 
-TfIdf.prototype.tf = function (doc) {
-    var $this = this;
-    var matches = doc.match(/\b\w\w+\b/g);
+TfIdf.prototype.vectorize = function (text) {
+    var matches = text.match(/\b\w\w+\b/g);
     matches = matches.map(function(match) {
         return match.toLowerCase();
     });
+    return matches;
+}
+
+TfIdf.prototype.tf = function (matches) {
+    var $this = this;
     var frequencies = {};
     matches.map(function(item) {
         if (frequencies[item] && frequencies.hasOwnProperty(item)) {
@@ -244,7 +272,7 @@ TfIdf.prototype.equalize = function(docs) {
         for (var i in keys) {
             var key = keys[i];
 
-            if ((key in doc) && $this.idf(key) < 3.5) {
+            if ((key in doc) && $this.idf(key) > 0.0) {
                 frequencies.push(doc[key]/$this._maxFreq[key] * $this.idf(key));
             } else {
                 frequencies.push(0.0);
@@ -256,18 +284,31 @@ TfIdf.prototype.equalize = function(docs) {
 }
 
 function Clusterizer(docs, numClusters) {
+    var links = docs.map(function (doc) {
+        var weights = {};
+        doc.links.map(function(link) {
+            weights[link] = 100;
+        })
+
+        var l = document.createElement("a");
+        l.href = doc.url;
+        weights[l.hostname] = 10000;
+
+        return weights;
+    })
+
     docs = docs.map(function (doc) {
-        return doc.text;
+        return doc.text + " " + doc.title;
     });
 
-    var tfidf = new TfIdf(docs);
+    var tfidf = new TfIdf({ docs: docs, weighted: links});
 
     docs = tfidf.get_docs();
 
     var levels = Cluster({
       input: docs,
       distance: distanceMeasure,
-      linkage: 'single',
+      linkage: 'complete',
       minClusters: numClusters,
     });
 
@@ -335,7 +376,8 @@ Background.prototype.clusterize = function(numClusters) {
                     text: response.text,
                     url: e.url,
                     title: response.title,
-                    id: e.id
+                    id: e.id,
+                    links: response.links
                 });
 
                 var ids = $this.out.map(function (item) {
