@@ -152,12 +152,20 @@ function averageLink(distances) {
 }
 
 // Manhattan distance (for now)
+function manhattanDistance(a, b) {
+  var d = 0;
+  for (var i = 0; i < a.length; i++) {
+      d += Math.abs(a[i] - b[i]);
+  }
+  return d;
+}
+
 function distanceMeasure(a, b) {
   var d = 0;
   var aN = 0;
   var bN = 0;
   for (var i = 0; i < a.length; i++) {
-      d += a[i] * b[i];
+      d += Math.abs(a[i] - b[i]);
       aN += a[i] * a[i];
       bN += b[i] * b[i];
   }
@@ -168,6 +176,7 @@ function TfIdf(docs) {
     var $this = this;
     this.D = docs.length;
     this._idfCache = {};
+    this._maxFreq = {};
 
     this.docs = docs.map(function(doc){
         return $this.tf(doc);
@@ -181,16 +190,25 @@ TfIdf.prototype.get_docs = function() {
 }
 
 TfIdf.prototype.tf = function (doc) {
+    var $this = this;
     var matches = doc.match(/\b\w\w+\b/g);
     matches = matches.map(function(match) {
         return match.toLowerCase();
     });
     var frequencies = {};
     matches.map(function(item) {
-        if (item in frequencies) {
+        if (frequencies[item] && frequencies.hasOwnProperty(item)) {
             frequencies[item] += 1;
         } else {
             frequencies[item] = 1;
+        }
+
+        if ($this._maxFreq[item] && $this._maxFreq.hasOwnProperty(item)) {
+            if ($this._maxFreq[item] < frequencies[item]) {
+                $this._maxFreq[item] = frequencies[item];
+            }
+        } else {
+            $this._maxFreq[item] = frequencies[item];
         }
     });
 
@@ -206,9 +224,8 @@ TfIdf.prototype.idf = function (term) {
         df += ((term in doc) ? 1 : 0);
     });
 
-    var idf = 1 + Math.log((this.D) / ( 1 + df ));
-    this._idfCache[term] = idf;
-    return idf;
+    this._idfCache[term] = 1 + Math.log((this.D) / ( 1 + df ));
+    return this._idfCache[term];
 }
 
 TfIdf.prototype.equalize = function(docs) {
@@ -227,10 +244,10 @@ TfIdf.prototype.equalize = function(docs) {
         for (var i in keys) {
             var key = keys[i];
 
-            if (key in doc) {
-                frequencies.push(doc[key] * $this.idf(key));
+            if ((key in doc) && $this.idf(key) < 3.5) {
+                frequencies.push(doc[key]/$this._maxFreq[key] * $this.idf(key));
             } else {
-                frequencies.push(0);
+                frequencies.push(0.0);
             }
         }
 
@@ -250,11 +267,15 @@ function Clusterizer(docs, numClusters) {
     var levels = Cluster({
       input: docs,
       distance: distanceMeasure,
-      linkage: 'complete',
+      linkage: 'single',
       minClusters: numClusters,
     });
 
-    return levels;
+    return {
+        levels: levels,
+        tfidf: tfidf,
+        docs: docs
+    };
 }
 
 function Background()
@@ -326,9 +347,9 @@ Background.prototype.clusterize = function(numClusters) {
                 console.log(t.length, $this.out.length);
 
                 if (t.length == $this.out.length) {
-                    var clusters = new Clusterizer($this.out, numClusters);
-                    console.log(clusters);
-                    clusters = clusters[clusters.length -1].clusters;
+                    $this.clusterizer = new Clusterizer($this.out, numClusters);
+                    console.log($this.clusterizer);
+                    var clusters = $this.clusterizer.levels[$this.clusterizer.levels.length -1].clusters;
                     console.log(clusters.map(function(cluster){
                         return cluster.map(function(id) {
                             return $this.out[id].url;
