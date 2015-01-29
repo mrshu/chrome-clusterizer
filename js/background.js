@@ -164,21 +164,23 @@ function distanceMeasure(a, b) {
   return d / (Math.sqrt(aN) + Math.sqrt(bN));
 }
 
-function Clusterizer(docs, numClusters) {
+function TfIdf(docs) {
     var $this = this;
-    var new_docs = docs.map(function(doc) {
-        return $this.vectorize(doc.text);
+    this.D = docs.length;
+    this._idfCache = {};
+
+    this.docs = docs.map(function(doc){
+        return $this.tf(doc);
     });
 
-    var clusterable_docs = this.equalize(new_docs);
-
-    //console.log(clusterable_docs.join("\n"));
-
-    return this.clusterize(clusterable_docs, numClusters);
+    this.computed_docs = this.equalize(this.docs);
 }
 
+TfIdf.prototype.get_docs = function() {
+    return this.computed_docs;
+}
 
-Clusterizer.prototype.vectorize = function (doc) {
+TfIdf.prototype.tf = function (doc) {
     var matches = doc.match(/\b\w\w+\b/g);
     matches = matches.map(function(match) {
         return match.toLowerCase();
@@ -195,7 +197,21 @@ Clusterizer.prototype.vectorize = function (doc) {
     return frequencies;
 }
 
-Clusterizer.prototype.equalize = function(docs) {
+TfIdf.prototype.idf = function (term) {
+    if (this._idfCache[term] && this._idfCache.hasOwnProperty(term))
+        return this._idfCache[term];
+
+    var df = this.docs.reduce(function(count, doc) {
+        return count + ((term in doc) ? 1 : 0);
+    });
+
+    var idf = 1 + Math.log((this.D) / ( 1 + df ));
+    this._idfCache[term] = idf;
+    return idf;
+}
+
+TfIdf.prototype.equalize = function(docs) {
+    var $this = this;
     var keys = new Array();
     docs.map(function(doc){
         keys = keys.concat(Object.keys(doc));
@@ -211,7 +227,7 @@ Clusterizer.prototype.equalize = function(docs) {
             var key = keys[i];
 
             if (key in doc) {
-                frequencies.push(doc[key]);
+                frequencies.push(doc[key] * $this.idf(key));
             } else {
                 frequencies.push(0);
             }
@@ -221,7 +237,15 @@ Clusterizer.prototype.equalize = function(docs) {
     });
 }
 
-Clusterizer.prototype.clusterize = function (docs, numClusters) {
+function Clusterizer(docs, numClusters) {
+    docs = docs.map(function (doc) {
+        return doc.text;
+    });
+
+    var tfidf = new TfIdf(docs);
+
+    docs = tfidf.get_docs();
+
     var levels = Cluster({
       input: docs,
       distance: distanceMeasure,
@@ -238,7 +262,6 @@ function Background()
 
     // Automatically inject content scripts on install
     // as per http://stackoverflow.com/a/11598753
-
     this.inject();
 
     chrome.extension.onMessage.addListener(function(request, sender, callback){
