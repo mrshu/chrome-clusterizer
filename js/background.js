@@ -154,10 +154,14 @@ function averageLink(distances) {
 // Manhattan distance (for now)
 function distanceMeasure(a, b) {
   var d = 0;
+  var aN = 0;
+  var bN = 0;
   for (var i = 0; i < a.length; i++) {
-    d += Math.abs(a[i] - b[i]);
+      d += a[i] * b[i];
+      aN += a[i] * a[i];
+      bN += b[i] * b[i];
   }
-  return d;
+  return d / (Math.sqrt(aN) + Math.sqrt(bN));
 }
 
 function Clusterizer(docs, numClusters) {
@@ -166,10 +170,9 @@ function Clusterizer(docs, numClusters) {
         return $this.vectorize(doc.text);
     });
 
-    console.log(new_docs);
     var clusterable_docs = this.equalize(new_docs);
 
-    console.log(clusterable_docs);
+    //console.log(clusterable_docs.join("\n"));
 
     return this.clusterize(clusterable_docs, numClusters);
 }
@@ -198,6 +201,10 @@ Clusterizer.prototype.equalize = function(docs) {
         keys = keys.concat(Object.keys(doc));
     });
 
+    keys = keys.filter(function (e, i, keys) {
+        return keys.lastIndexOf(e) === i;
+    });
+
     return docs.map(function(doc){
         var frequencies = new Array();
         for (var i in keys) {
@@ -224,7 +231,6 @@ Clusterizer.prototype.clusterize = function (docs, numClusters) {
 
     return levels;
 }
-
 
 function Background()
 {
@@ -297,6 +303,7 @@ Background.prototype.clusterize = function(numClusters) {
 
                 if (t.length == $this.out.length) {
                     var clusters = new Clusterizer($this.out, numClusters);
+                    console.log(clusters);
                     clusters = clusters[clusters.length -1].clusters;
                     console.log(clusters.map(function(cluster){
                         return cluster.map(function(id) {
