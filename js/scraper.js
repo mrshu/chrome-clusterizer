@@ -15,8 +15,6 @@ chrome.runtime.onMessage.addListener(
                     hrefs.push(links[i].href);
                 }
 
-                console.log(hrefs)
-
                 sendResponse({
                     text: document.body.innerText,
                     title: document.title,

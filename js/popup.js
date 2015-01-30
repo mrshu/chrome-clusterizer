@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }, function () {
         });
 
+        document.getElementById('status').innerHTML = 'Hard computation in process ...';
     }, false);
 
     document.getElementById('equalize').addEventListener('click', function () {
@@ -14,5 +15,4 @@ document.addEventListener('DOMContentLoaded', function () {
             equalize: true
         });
     }, false);
-
 }, false);
