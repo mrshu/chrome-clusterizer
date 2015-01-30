@@ -215,6 +215,9 @@ TfIdf.prototype.get_docs = function() {
 
 TfIdf.prototype.vectorize = function (text) {
     var matches = text.match(/\b\w\w+\b/g);
+    if (matches === null)
+        return [];
+
     matches = matches.map(function(match) {
         return match.toLowerCase();
     });
