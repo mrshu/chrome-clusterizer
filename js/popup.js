@@ -8,6 +8,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         document.getElementById('status').innerHTML = 'Hard computation in process ...';
+
+        setTimeout(function() {
+            document.getElementById('status').innerHTML = 'Ok, something failed ...';
+        }, 5000);
     }, false);
 
     document.getElementById('equalize').addEventListener('click', function () {
