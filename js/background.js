@@ -408,40 +408,47 @@ Background.prototype.clusterize = function(numClusters) {
                 console.log(t.length, $this.out.length);
 
                 if (t.length == $this.out.length) {
-                    $this.clusterizer = new Clusterizer($this.out, numClusters);
-                    console.log($this.clusterizer);
-
-                    var bestLevel = $this.bestLevel($this.clusterizer.levels);
-                    var clusters = bestLevel.clusters;
-
-                    console.log(clusters.map(function(cluster){
-                        return cluster.map(function(id) {
-                            return $this.out[id].url;
-                        });
-                    }));
-
-                    // something went wrong (and seriously so)
-                    if (isNaN(bestLevel.linkage) || bestLevel.linkage == null) return;
-
-                    clusters.map(function (cluster) {
-                        var firstID = cluster.pop();
-                        chrome.windows.create({
-                            tabId: $this.out[firstID].id,
-                            type: "normal"
-                        }, function (win) {
-                            var tabIDs = cluster.map(function(id) {
-                                return $this.out[id].id;
-                            });
-                            chrome.tabs.move(tabIDs, {windowId: win.id, index: -1});
-                        });
-
-                    });
+                    $this.doClusterization($this.out, numClusters);
                 }
             });
         });
     });
 }
 
+Background.prototype.doClusterization = function (tabs, numClusters) {
+    var out = tabs;
+    this.clusterizer = new Clusterizer(out, numClusters);
+
+    console.log(this.clusterizer);
+
+    var bestLevel = this.bestLevel(this.clusterizer.levels);
+    var clusters = bestLevel.clusters;
+
+    console.log(clusters.map(function(cluster){
+        return cluster.map(function(id) {
+            return out[id].url;
+        });
+    }));
+
+    // something went wrong (and seriously so)
+    if (isNaN(bestLevel.linkage) || bestLevel.linkage == null) {
+        console.log('something went wrong and (seriously so)');
+        return;
+    }
+
+    clusters.map(function (cluster) {
+        var firstID = cluster.pop();
+        chrome.windows.create({
+            tabId: out[firstID].id,
+            type: "normal"
+        }, function (win) {
+            var tabIDs = cluster.map(function(id) {
+                return out[id].id;
+            });
+            chrome.tabs.move(tabIDs, {windowId: win.id, index: -1});
+        });
+    });
+}
 
 Background.prototype.bestLevel = function (levels) {
     var best = null;
