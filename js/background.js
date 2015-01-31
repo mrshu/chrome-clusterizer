@@ -380,10 +380,10 @@ Background.prototype.clusterize = function(numClusters) {
     chrome.tabs.query({}, function(tabs) {
         var t = new Array();
 
-        tabs.forEach(function(e, i, a){
+        tabs.forEach(function(tab, i, a){
             // ignoring internal urls
-            if (tabs[i].url.match(ALLOWED_URLS_RE)) {
-                t.push(e);
+            if (tab.url.match(ALLOWED_URLS_RE) && !$this.possiblyNA(tab)) {
+                t.push(tab);
             }
         });
 
@@ -479,6 +479,13 @@ Background.prototype.bestLevel = function (levels) {
     });
 
     return best;
+}
+
+// when a domain doesn't exist for instance the title of such tab starts with
+// its full URL. This is a basic check for that.
+// Should be an O(1) solution.
+Background.prototype.possiblyNA = function (tab) {
+    return (tab.title.slice(0, tab.url.length) == tab.url);
 }
 
 Background.prototype.inject = function () {
