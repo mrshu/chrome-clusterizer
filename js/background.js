@@ -169,6 +169,8 @@ function distanceMeasure(a, b) {
       aN += a[i] * a[i];
       bN += b[i] * b[i];
   }
+
+  // console.log(aN, bN, d, isNaN(aN), isNaN(bN));
   return d / (Math.sqrt(aN) + Math.sqrt(bN));
 }
 
@@ -215,8 +217,10 @@ TfIdf.prototype.get_docs = function() {
 
 TfIdf.prototype.vectorize = function (text) {
     var matches = text.match(/\b\w\w+\b/g);
-    if (matches === null)
-        return [];
+    if (matches === null) {
+        console.log('no matches');
+        return ["www"];
+    }
 
     matches = matches.map(function(match) {
         return match.toLowerCase();
@@ -406,12 +410,18 @@ Background.prototype.clusterize = function(numClusters) {
                 if (t.length == $this.out.length) {
                     $this.clusterizer = new Clusterizer($this.out, numClusters);
                     console.log($this.clusterizer);
-                    var clusters = $this.bestLevel($this.clusterizer.levels).clusters;
+
+                    var bestLevel = $this.bestLevel($this.clusterizer.levels);
+                    var clusters = bestLevel.clusters;
+
                     console.log(clusters.map(function(cluster){
                         return cluster.map(function(id) {
                             return $this.out[id].url;
                         });
                     }));
+
+                    // something went wrong (and seriously so)
+                    if (isNaN(bestLevel.linkage) || bestLevel.linkage == null) return;
 
                     clusters.map(function (cluster) {
                         var firstID = cluster.pop();
