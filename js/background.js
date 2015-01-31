@@ -341,6 +341,8 @@ function Background()
 {
     var $this = this;
 
+    this.clusterized = false;
+
     // Automatically inject content scripts on install
     // as per http://stackoverflow.com/a/11598753
     this.inject();
@@ -375,6 +377,7 @@ Background.prototype.equalize = function () {
 var ALLOWED_URLS_RE = /https?:\/\//gi;
 
 Background.prototype.clusterize = function(numClusters) {
+    this.clusterized = false;
     this.out = new Array();
     var $this = this;
     chrome.tabs.query({}, function(tabs) {
@@ -382,10 +385,17 @@ Background.prototype.clusterize = function(numClusters) {
 
         tabs.forEach(function(tab, i, a){
             // ignoring internal urls
-            if (tab.url.match(ALLOWED_URLS_RE) && !$this.possiblyNA(tab)) {
+            if (tab.url.match(ALLOWED_URLS_RE)) {
                 t.push(tab);
             }
         });
+
+        setTimeout(function() {
+            if (this.clusterized)
+                return;
+
+            $this.doClusterization($this.out, numClusters);
+        }, t.length*40);
 
         t.forEach(function(e, i ,a) {
             chrome.tabs.sendMessage(t[i].id, {action: "get_text"}, function(response) {
@@ -408,6 +418,9 @@ Background.prototype.clusterize = function(numClusters) {
                 console.log(t.length, $this.out.length);
 
                 if (t.length == $this.out.length) {
+                    if (this.clusterized)
+                        return;
+
                     $this.doClusterization($this.out, numClusters);
                 }
             });
@@ -416,6 +429,8 @@ Background.prototype.clusterize = function(numClusters) {
 }
 
 Background.prototype.doClusterization = function (tabs, numClusters) {
+    this.clusterized = true;
+
     var out = tabs;
     this.clusterizer = new Clusterizer(out, numClusters);
 

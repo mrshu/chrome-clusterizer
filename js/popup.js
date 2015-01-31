@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         setTimeout(function() {
             document.getElementById('status').innerHTML = 'Ok, something failed ...';
-        }, 5000);
+        }, 4000);
     }, false);
 
     document.getElementById('equalize').addEventListener('click', function () {
