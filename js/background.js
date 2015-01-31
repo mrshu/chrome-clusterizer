@@ -385,7 +385,7 @@ Background.prototype.clusterize = function(numClusters) {
 
         tabs.forEach(function(tab, i, a){
             // ignoring internal urls
-            if (tab.url.match(ALLOWED_URLS_RE)) {
+            if (tab.url.match(ALLOWED_URLS_RE) && tab.status != "loading") {
                 t.push(tab);
             }
         });
