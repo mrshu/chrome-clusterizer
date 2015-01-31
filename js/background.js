@@ -316,7 +316,7 @@ function Clusterizer(docs, numClusters) {
     })
 
     docs = docs.map(function (doc) {
-        return doc.text + " " + doc.title;
+        return doc.text + " " + doc.title + " " + doc.url;
     });
 
     var tfidf = new TfIdf({ docs: docs, weighted: links});
