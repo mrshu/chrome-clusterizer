@@ -151,7 +151,7 @@ function averageLink(distances) {
   return sum / distances.length
 }
 
-// Manhattan distance (for now)
+// Manhattan distance
 function manhattanDistance(a, b) {
   var d = 0;
   for (var i = 0; i < a.length; i++) {
@@ -173,8 +173,6 @@ function distanceMeasure(a, b) {
   // console.log(aN, bN, d, isNaN(aN), isNaN(bN));
   return d / (Math.sqrt(aN) + Math.sqrt(bN));
 }
-
-// distanceMeasure = manhattanDistance;
 
 function TfIdf(docs) {
     var weighted = {};
@@ -308,12 +306,11 @@ function Clusterizer(docs, numClusters) {
                     l.href = d.url;
                     weights[l.hostname] = 10000;
                 }
-            })
-        })
-
+            });
+        });
 
         return weights;
-    })
+    });
 
     docs = docs.map(function (doc) {
         return doc.text + " " + doc.title + " " + doc.url;
@@ -340,7 +337,6 @@ function Clusterizer(docs, numClusters) {
 function Background()
 {
     var $this = this;
-
     this.clusterized = false;
 
     // Automatically inject content scripts on install
@@ -384,7 +380,7 @@ Background.prototype.clusterize = function(numClusters) {
         var t = new Array();
 
         tabs.forEach(function(tab, i, a){
-            // ignoring internal urls
+            // ignoring internal urls and tabs that are still being loaded
             if (tab.url.match(ALLOWED_URLS_RE) && tab.status != "loading") {
                 t.push(tab);
             }
