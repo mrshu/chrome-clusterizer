@@ -387,7 +387,7 @@ Background.prototype.clusterize = function(numClusters) {
         });
 
         setTimeout(function() {
-            if (this.clusterized)
+            if ($this.clusterized)
                 return;
 
             $this.doClusterization($this.out, numClusters);
@@ -402,7 +402,8 @@ Background.prototype.clusterize = function(numClusters) {
                     title: response.title,
                     id: e.id,
                     hosts: response.hosts,
-                    links: response.links
+                    links: response.links,
+                    tab: e
                 });
 
                 var ids = $this.out.map(function (item) {
@@ -414,7 +415,7 @@ Background.prototype.clusterize = function(numClusters) {
                 console.log(t.length, $this.out.length);
 
                 if (t.length == $this.out.length) {
-                    if (this.clusterized)
+                    if ($this.clusterized)
                         return;
 
                     $this.doClusterization($this.out, numClusters);
