@@ -26,7 +26,6 @@
   "content_scripts": [{
         "matches": ["http://*/*", "https://*/*"],
         "js": [
-                "js/jquery.js",
                 "js/scraper.js"
         ]
   }],
