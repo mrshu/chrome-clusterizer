@@ -5,12 +5,12 @@
   "offline_enabled": true,
   "description": "Tabs Clusterizer",
   "icons": {
-      "16": "img/icon_16.png",
-      "32": "img/icon_32.png",
-      "256": "img/icon_256.png"
+    "16": "img/icon_16.png",
+    "32": "img/icon_32.png",
+    "256": "img/icon_256.png"
   },
   "browser_action": {
-      "default_popup": "html/popup.html"
+    "default_popup": "html/popup.html"
   },
   "commands": {
     "_execute_browser_action": {
@@ -24,13 +24,13 @@
   },
   "permissions": ["tabs", "http://*/", "https://*/"],
   "content_scripts": [{
-        "matches": ["http://*/*", "https://*/*"],
-        "js": [
-                "js/scraper.js"
-        ]
+    "matches": ["http://*/*", "https://*/*"],
+    "js": [
+      "js/scraper.js"
+    ]
   }],
   "background": {
-          "scripts": ["js/background.js"]
+    "scripts": ["js/background.js"]
   },
   "web_accessible_resources": []
 }
