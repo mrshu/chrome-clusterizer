@@ -206,11 +206,11 @@ function TfIdf(docs) {
         }
     })
 
-    this.computed_docs = this.equalize(this.docs);
+    this.computedDocs = this.equalize(this.docs);
 }
 
-TfIdf.prototype.get_docs = function() {
-    return this.computed_docs;
+TfIdf.prototype.getDocs = function() {
+    return this.computedDocs;
 }
 
 TfIdf.prototype.vectorize = function (text) {
@@ -318,7 +318,7 @@ function Clusterizer(docs, numClusters) {
 
     var tfidf = new TfIdf({ docs: docs, weighted: links});
 
-    docs = tfidf.get_docs();
+    docs = tfidf.getDocs();
 
     var levels = Cluster({
       input: docs,
